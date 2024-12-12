@@ -33,20 +33,83 @@ i {
 }
 
 h1 {
-    font-size: 38px;
+    font-size: 3.8rem;
     font-weight: 600;
+}
+
+h2 {
+    font-size: 3.2rem;
+    font-weight: 600;
+}
+
+h3 {
+    font-size: 2.6rem;
+}
+
+h4 {
+    font-size: 2.2rem;
+}
+
+h5 {
+    font-size: 1.8rem;
 }
 
 h1.disabled {
     color: gray;
 }
 
-.h-10 {
-    height: 10%;
+.d-flex { 
+    display: flex;
 }
 
-.h-80 {
-    height: 80%;
+.flex-column {
+    flex-direction: column;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.justify-content-center {
+    justify-content: center;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+.pe-4 {
+    padding-right: 2.2rem;
+}
+
+.px-5 {
+    padding-left: 1.6rem;
+    padding-right: 1.6rem;
+}
+
+.m-auto {
+    margin: auto;
+}
+
+.mb-1 {
+    margin-bottom: .3rem;
+}
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.ms-auto {
+    margin-left: auto;
+}
+
+.h-15 {
+    height: 15%;
+}
+
+.h-70 {
+    height: 70%;
 }
 
 .w-70 {
@@ -85,34 +148,27 @@ h1.disabled {
     color: yellow;
 }
 
-.loading {
-    height: 100px;
-}
-
 .player {
     position: absolute;
-    top: 0px;
-    left: 0px;
-    width: 20px;
-    height: 20px;
+    transition-duration: 200ms;
+    transition-timing-function: ease;
+    transition-property: color, opacity, transform;
 }
 
 .guest {
     position: absolute;
-    top: 0px;
-    left: 0px;
-    width: 18px;
-    height: 18px;
+    width: 1.8rem;
+    height: 1.8rem;
     z-index: -1;
-    opacity: .4;
+    opacity: .3;
+    transition: opacity 200ms, height 200ms, width 200ms;
 }
 
-.flowey {
-    position: absolute;
-    top: -200px;
-    left: -25px;
-    width: 70px;
-    height: 70px;
+.guest:hover {
+    width: 2rem;
+    height: 2rem;
+    opacity: 1;
+    z-index: 1;
 }
 
 .relative {
@@ -122,12 +178,13 @@ h1.disabled {
 .square {
     position: absolute;
     color: transparent;
-    width: 230px;
-    height: 230px;
-    border: 6px solid white;
+    width: 220px;
+    height: 220px;
     top: -105px;
     left: -105px;
-    z-index: 10;
+    z-index: -10;
+    border: 5px solid #202020;
+    border-radius: 2px;
 }
 
 .desktop {

@@ -60,7 +60,6 @@ function renderContext() {
             const html = `<img id="guest-${playerId}" class="guest" src="assets/images/player_${player.color}.png" alt="guest-${playerId}">`;
             desktopElement.insertAdjacentHTML("beforeend", html);
             otherPlayerElement = desktopElement.querySelector(`#guest-${playerId}`);
-            console.log(desktopElement);
         }
 
         if (otherPlayerElement) updatePlayerPosition(otherPlayerElement, player.position);
@@ -75,10 +74,6 @@ function startEngine() {
         movePlayer();
         renderContext();
     }, 16);
-
-    setInterval(() => {
-        console.log(memory);
-    }, 5000);
 }
 
 const loadScreen = [
@@ -104,7 +99,7 @@ const loadScreen = [
         screenElement.innerHTML = screenHTML[1];
         desktopElement = document.getElementById('desktop');
         const noButton = document.getElementById('no-button');
-        noButton.onclick = () => loadScreen[1]();
+        noButton.onclick = () => loadScreen[0]();
         const yesButton = document.getElementById('yes-button');
         yesButton.onclick = () => loadScreen[2]();
         const name = document.getElementById('username');
@@ -157,15 +152,15 @@ const loadScreen = [
 ]
 
 const screenHTML = [
-    `<div id="desktop" class="desktop d-flex flex-column m-auto">
-     <h1>Name the fallen human.</h1>
-     <input id="username-input" type="text" class="input disabled" placeholder="My name" autocomplete="off">
+    `<div id="desktop" class="desktop d-flex flex-column m-auto text-center">
+     <h1 class='mb-1'>Name the Fallen Soul</h1>
+     <input id="username-input" type="text" class="input disabled mb-1" placeholder="My name" autocomplete="off">
      <h1 id='done-button' class="button ms-auto pe-4">Done</h1>
      </div>`,
 
     `<div id="desktop" class="desktop d-flex flex-column m-auto text-center">
-     <h1>Is this name correct?</h1>
-     <h1 class='disabled' id="username"></h1>
+     <h1 class='mb-1'>Is this name correct?</h1>
+     <h1 class='disabled mb-1' id="username"></h1>
      <div class="d-flex justify-content-center">
         <h1 id='no-button' class="button px-5">No</h1>
         <h1 id='yes-button' class="button px-5">Yes</h1>
