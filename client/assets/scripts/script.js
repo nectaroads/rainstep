@@ -18,6 +18,8 @@ let desktopElement = null;
 let screenElement = null;
 let currentScreen = 0;
 
+let soundtrack = null;
+
 document.addEventListener('DOMContentLoaded', function () {
     screenElement = document.getElementById('screen');
     loadScreen[currentScreen]();
@@ -30,6 +32,18 @@ document.addEventListener('keydown', (e) => {
 document.addEventListener('keyup', (e) => {
     delete keysPressed[e.key.toLowerCase()];
 });
+
+function playSoundtrack(track) {
+    if (soundtrack?.src.includes(track)) return; 
+    
+    if (soundtrack) {
+        soundtrack.pause();
+        soundtrack.currentTime = 0; 
+    }
+
+    soundtrack = new Audio(`assets/sounds/${track}`);
+    soundtrack.play(); 
+}
 
 function movePlayer() {
     if (!(keysPressed['w'] || keysPressed['s'] || keysPressed['a'] || keysPressed['d'])) return;
@@ -79,18 +93,27 @@ function startEngine() {
 const loadScreen = [
     function index_0() {
         screenElement.innerHTML = screenHTML[0];
+        playSoundtrack(`waterfall.mp3`)
         desktopElement = document.getElementById('desktop');
+        setTimeout(() => { desktopElement.classList.add('visible'); }, 0)
         const doneButton = document.getElementById('done-button');
-        doneButton.onclick = () => memory.player.username.length > 2 ? loadScreen[1]() : null;
+        doneButton.onclick = () => {
+            if (memory.player.username.length < 3) return;
+            new Audio(`assets/sounds/select.wav`).play();
+            loadScreen[1]();
+        }
         waveElement(desktopElement.id, .3, 10);
         const input = document.getElementById('username-input');
         input.addEventListener('input', () => {
-            //const sfx = new Audio(`assets/sounds/type_${rollDice(2)}.wav`);
-            //sfx.play();
+            if (input.value.length > 16) {
+                input.value = input.value.substring(0, 16);
+                return;
+            }
             memory.player.username = input.value;
+            new Audio(`assets/sounds/type_${rollDice(2)}.wav`).play();
             if (memory.player.username.length < 3) input.classList.add('disabled');
             else input.classList.remove('disabled');
-            shake(desktopElement.id, 30, 5);
+            shake(desktopElement.id, 30, 3);
         });
         currentScreen = 0;
     },
@@ -98,10 +121,17 @@ const loadScreen = [
     function index_1() {
         screenElement.innerHTML = screenHTML[1];
         desktopElement = document.getElementById('desktop');
+        setTimeout(() => { desktopElement.classList.add('visible'); }, 0)
         const noButton = document.getElementById('no-button');
-        noButton.onclick = () => loadScreen[0]();
+        noButton.onclick = () => {
+            new Audio(`assets/sounds/select.wav`).play();
+            loadScreen[0]();
+        }
         const yesButton = document.getElementById('yes-button');
-        yesButton.onclick = () => loadScreen[2]();
+        yesButton.onclick = () => {
+            new Audio(`assets/sounds/select.wav`).play();
+            loadScreen[2]();
+        }
         const name = document.getElementById('username');
         name.innerHTML = memory.player.username;
         waveElement(desktopElement.id, .3, 10);
@@ -111,6 +141,7 @@ const loadScreen = [
     function index_2() {
         screenElement.innerHTML = screenHTML[2];
         desktopElement = document.getElementById('desktop');
+        setTimeout(() => { desktopElement.classList.add('visible'); }, 0)
         waveElement(desktopElement.id, .3, 10);
         currentScreen = 2;
 
@@ -143,9 +174,10 @@ const loadScreen = [
 
     function index_3() {
         screenElement.innerHTML = screenHTML[3];
-        desktopElement = document.getElementById('desktop');
         playerElement = document.getElementById('player');
+        desktopElement = document.getElementById('desktop');
         waveElement(desktopElement.id, .2, 10);
+        setTimeout(() => { desktopElement.classList.add('visible'); }, 0)
         currentScreen = 3;
         startEngine();
     },
@@ -179,8 +211,8 @@ const screenHTML = [
 
 // Utilities Module
 function rollDice(max) {
-    const randomNumber = Math.floor(Math.random() * max + 1);
-    return max > 1 ? randomNumber : 1;
+    const randomNumber = Math.floor(Math.random() * (max + 1));
+    return randomNumber;
 }
 
 // Animation Module
@@ -201,19 +233,22 @@ function waveElement(targetId, speed = 1, intensity = 5) {
 function shake(targetId, speed = 1, intensity = 10) {
     const element = document.getElementById(targetId);
     if (!element) return;
+
+    const computedStyle = window.getComputedStyle(element);
+    const initialTransform = computedStyle.transform !== 'none' ? computedStyle.transform : '';
+
     let angle = 0;
     const direction = Math.random() > 0.5 ? 1 : -1;
-    const startX = 0;
+
     function animateShake() {
         angle += speed;
         const offsetX = Math.sin(angle * Math.PI / 180) * intensity * direction;
+        element.style.transform = `${initialTransform} translateX(${offsetX}px)`;
         if (angle >= 180) {
-            element.style.transform = `translateX(${startX}px)`;
+            element.style.transform = initialTransform;
             return;
         }
-        element.style.transform = `translateX(${offsetX}px)`;
         requestAnimationFrame(animateShake);
     }
     animateShake();
-    requestAnimationFrame(animateShake);
 }

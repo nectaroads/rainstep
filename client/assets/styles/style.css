@@ -162,6 +162,7 @@ h1.disabled {
     z-index: -1;
     opacity: .3;
     transition: opacity 200ms, height 200ms, width 200ms;
+    cursor: pointer;
 }
 
 .guest:hover {
@@ -188,7 +189,15 @@ h1.disabled {
 }
 
 .desktop {
+    opacity: 0; 
     overflow: none;
+    visibility: hidden;
+    transition: opacity 1s ease-in-out, visibility 1s ease-in-out;
+}
+
+.desktop.visible {
+    opacity: 1; 
+    visibility: visible;
 }
 
 .c-gray {
