@@ -20,9 +20,23 @@ let currentScreen = 0;
 
 let soundtrack = null;
 
+let started = false;
+
+document.addEventListener('click', () => {
+    if (started) return;
+    loadScreen[currentScreen]();
+    started = true;
+});
+
 document.addEventListener('DOMContentLoaded', function () {
     screenElement = document.getElementById('screen');
-    loadScreen[currentScreen]();
+    desktopElement = document.getElementById('desktop');
+    const button = document.getElementById(`disconnect-button`);
+    button.addEventListener('click', function () {
+        socket?.close();
+        loadScreen[0]();
+    });
+    waveElement(desktopElement.id, .2, 10);
 });
 
 document.addEventListener('keydown', (e) => {
@@ -34,15 +48,16 @@ document.addEventListener('keyup', (e) => {
 });
 
 function playSoundtrack(track) {
-    if (soundtrack?.src.includes(track)) return; 
-    
+    if (soundtrack?.src.includes(track)) return;
+
     if (soundtrack) {
         soundtrack.pause();
-        soundtrack.currentTime = 0; 
+        soundtrack.currentTime = 0;
     }
 
     soundtrack = new Audio(`assets/sounds/${track}`);
-    soundtrack.play(); 
+    soundtrack.play();
+    soundtrack.loop = true;
 }
 
 function movePlayer() {
@@ -187,15 +202,15 @@ const screenHTML = [
     `<div id="desktop" class="desktop d-flex flex-column m-auto text-center">
      <h1 class='mb-1'>Name the Fallen Soul</h1>
      <input id="username-input" type="text" class="input disabled mb-1" placeholder="My name" autocomplete="off">
-     <h1 id='done-button' class="button ms-auto pe-4">Done</h1>
+     <h1 id='done-button' class="button ms-auto me-4">Done</h1>
      </div>`,
 
     `<div id="desktop" class="desktop d-flex flex-column m-auto text-center">
      <h1 class='mb-1'>Is this name correct?</h1>
      <h1 class='disabled mb-1' id="username"></h1>
      <div class="d-flex justify-content-center">
-        <h1 id='no-button' class="button px-5">No</h1>
-        <h1 id='yes-button' class="button px-5">Yes</h1>
+        <h1 id='no-button' class="button ms-auto me-4">No</h1>
+        <h1 id='yes-button' class="button">Yes</h1>
      </div>
      </div>`,
 
