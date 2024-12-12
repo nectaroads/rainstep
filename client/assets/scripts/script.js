@@ -191,6 +191,7 @@ const loadScreen = [
         screenElement.innerHTML = screenHTML[3];
         playerElement = document.getElementById('player');
         desktopElement = document.getElementById('desktop');
+        playSoundtrack(`bonetrousle.mp3`)
         waveElement(desktopElement.id, .2, 10);
         setTimeout(() => { desktopElement.classList.add('visible'); }, 0)
         currentScreen = 3;
