@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "rainstep_server": "file:",
     "ws": "^8.18.0"
   }
 }

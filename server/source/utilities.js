@@ -65,27 +65,26 @@ function isColliding(player, object) {
 }
 
 function getRotatedVertices(object) {
-    const radians = (Math.PI / 180) * object.getAngle();
+    const radians = (Math.PI / 180) * object.angle;
     const cos = Math.cos(radians);
     const sin = Math.sin(radians);
-
-    const halfWidth = object.getWidth() / 2;
-    const halfHeight = object.getHeight() / 2;
+    const halfWidth = object.width / 2;
+    const halfHeight = object.height / 2;
 
     return [
-        { x: object.getX() - halfWidth * cos + halfHeight * sin, y: object.getY() - halfWidth * sin - halfHeight * cos },
-        { x: object.getX() + halfWidth * cos + halfHeight * sin, y: object.getY() + halfWidth * sin - halfHeight * cos },
-        { x: object.getX() + halfWidth * cos - halfHeight * sin, y: object.getY() + halfWidth * sin + halfHeight * cos },
-        { x: object.getX() - halfWidth * cos - halfHeight * sin, y: object.getY() - halfWidth * sin + halfHeight * cos }
+        { x: object.position.left - halfWidth * cos + halfHeight * sin, y: object.position.top - halfWidth * sin - halfHeight * cos },
+        { x: object.position.left + halfWidth * cos + halfHeight * sin, y: object.position.top + halfWidth * sin - halfHeight * cos },
+        { x: object.position.left + halfWidth * cos - halfHeight * sin, y: object.position.top + halfWidth * sin + halfHeight * cos },
+        { x: object.position.left - halfWidth * cos - halfHeight * sin, y: object.position.top - halfWidth * sin + halfHeight * cos }
     ];
 }
 
-function getPlayerVertices(player, hitbox) {
+function getPlayerVertices(player) {
     return [
-        { x: player.getPositionLeft(), y: player.getPositionTop() },
-        { x: player.getPositionLeft() + hitbox, y: player.getPositionTop() },
-        { x: player.getPositionLeft() + hitbox, y: player.getPositionTop() + hitbox },
-        { x: player.getPositionLeft(), y: player.getPositionTop() + hitbox }
+        { x: player.position.left, y: player.position.top },
+        { x: player.position.left + player.hitbox, y: player.position.top },
+        { x: player.position.left + player.hitbox, y: player.position.top + player.hitbox },
+        { x: player.position.left, y: player.position.top + player.hitbox }
     ];
 }
 

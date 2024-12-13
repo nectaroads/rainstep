@@ -1,35 +1,37 @@
-const { Player } = require("./classes");
+const { Player, Song } = require("./classes");
 const { formatConsole, isColliding } = require("./utilities");
 
 let lastTimestamp = 0;
 let consts = { TPS: 60, }
-let memory = { difficulty: 1, cholera: 1, velocity: 3, boundary: 100, playerHitbox: 20, connectionId: 0, spawnId: 0, hazards: { challenger: 'Placeholder', patience: 1, rhythm: 1, arsenal: [[]], spawned: [], }, connections: [], sockets: [] };
+let memory = { difficulty: 1, cholera: 1, boundary: 100, playerHitbox: 20, connectionId: 0, spawnId: 0, hazards: { challenger: 'Placeholder', patience: 1, rhythm: 1, arsenal: [[]], spawned: [new Song(80, 80, 90, 0)] }, connections: [], sockets: [] };
 
-function updateCollisions() {
+function updateCollisions(deltaTime) {
     memory.connections.forEach(player => {
         memory.hazards.spawned.forEach(weapon => {
             const collision = isColliding(player, weapon);
-            if (collision) player.getDamage();
+            if (!collision || player.grace > 0) return;
+            player.health -= 1;
+            player.grace = 1;
         });
     });
 };
 
 function updateEnvironment(deltaTime) {
     if (memory.hazards.spawned.length <= 0) return;
-    memory.hazards.spawned.foreach(weapon => {
-        const grace = weapon.getGrace(deltaTime);
-        if (grace > 0) return;
-        const radians = (Math.PI / 180) * (weapon.getAngle() + 90);
-        const dx = Math.cos(radians) * weapon.getVelocity() * deltaTime;
-        const dy = Math.sin(radians) * weapon.getVelocity() * deltaTime;
-
-        weapon.setX() = weapon.getX() + dx;
-        weapon.setY() = weapon.getY() + dy;
+    memory.hazards.spawned.forEach(weapon => {
+        if (weapon.grace > 0) return;
+        const radians = (Math.PI / 180) * (weapon.angle + 90);
+        const dx = Math.cos(radians) * weapon.velocity * deltaTime;
+        const dy = Math.sin(radians) * weapon.velocity * deltaTime;
+        weapon.x += dx;
+        weapon.y += dy;
+        weapon.grace -= deltaTime;
     });
 }
 
 function updatePlayers(deltaTime) {
     memory.connections.forEach(player => {
+        player.grace -= deltaTime;
         const socket = memory.sockets.find(connection => connection.connection === player.connection)?.socket;
         if (!socket) return;
         const connections = memory.connections.filter(otherPlayer => otherPlayer.connection !== player.connection).map(({ connection, ...rest }) => rest);
@@ -39,10 +41,11 @@ function updatePlayers(deltaTime) {
 
 function serverUpdate() {
     if (memory.connections.length > 0) {
+        if (lastTimestamp == 0) lastTimestamp = Date.now();
         const currentTimestamp = Date.now();
         const deltaTime = (currentTimestamp - lastTimestamp) / 1000;
         lastTimestamp = currentTimestamp;
-        updateCollisions();
+        updateCollisions(deltaTime);
         updateEnvironment(deltaTime);
         updatePlayers(deltaTime);
     }
@@ -54,17 +57,17 @@ const handleSocketMessages = {
         memory.connections.push(new Player(data.username, data.color, socket._sender._socket.remoteAddress, memory.connectionId));
         memory.sockets.push({ socket: socket, connection: socket._sender._socket.remoteAddress });
         socket.send(JSON.stringify({ type: 'onConnect' }));
-        if (memory.connectionId == 0) serverUpdate();
         memory.connectionId++;
+        if (memory.connectionId === 1) serverUpdate();
     },
 
     'onMove': (socket, data) => {
-        const player = memory.connections.find((player) => player.getConnection() === socket._sender._socket.remoteAddress);
+        const player = memory.connections.find((player) => player.connection === socket._sender._socket.remoteAddress);
         if (!player) return;
-        if (data.pressedKeys['w']) player.setPositionTop(Math.max(-memory.boundary, player.getPositionTop() - memory.velocity));
-        else if (data.pressedKeys['s']) player.setPositionTop(Math.min(memory.boundary, player.getPositionTop() + memory.velocity));
-        if (data.pressedKeys['a']) player.setPositionLeft(Math.max(-memory.boundary, player.getPositionLeft() - memory.velocity));
-        else if (data.pressedKeys['d']) player.setPositionLeft(Math.min(memory.boundary, player.getPositionLeft() + memory.velocity));
+        if (data.pressedKeys['w']) player.position.top = Math.max(-memory.boundary, player.position.top - player.velocity);
+        else if (data.pressedKeys['s']) player.position.top = Math.min(memory.boundary, player.position.top + player.velocity);
+        if (data.pressedKeys['a']) player.position.left = Math.max(-memory.boundary, player.position.left - player.velocity);
+        else if (data.pressedKeys['d']) player.position.left = Math.min(memory.boundary, player.position.left + player.velocity);
     }
 };
 
@@ -78,9 +81,9 @@ function onSocketMessage(socket, argument) {
 }
 
 function onSocketClose(socket) {
-    memory.connections = memory.connections.filter(player => player.getConnection() !== socket._sender._socket.remoteAddress);
+    memory.connections = memory.connections.filter(player => player.connection !== socket._sender._socket.remoteAddress);
     memory.sockets = memory.sockets.filter(s => s.connection !== socket._sender._socket.remoteAddress);
     console.log(formatConsole(`[Server] Connection interrupted: ${socket._sender._socket.remoteAddress}`));
 }
 
-module.exports = { onSocketConnection, onSocketMessage, onSocketClose, serverUpdate };
+module.exports = { onSocketConnection, onSocketMessage, onSocketClose };

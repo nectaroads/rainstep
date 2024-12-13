@@ -1,8 +1,10 @@
+// I will organize the client scripts soon, it's messy as fuck.
+
 const HOST = `192.168.0.121`;
 const PORT = '8080';
 
 let memory = {
-    player: { username: '', color: 'blue' },
+    player: { username: '', color: 'blue', health: 5, grace: 1 },
     connections: [],
     hazards: {
         challenger: '',
@@ -12,10 +14,13 @@ let memory = {
 
 let socket = null;
 
+let engineInterval = null;
 let keysPressed = {};
 let playerElement = null;
 let desktopElement = null;
 let screenElement = null;
+
+let currentHealth = 5;
 let currentScreen = 0;
 
 let soundtrack = null;
@@ -58,24 +63,25 @@ function playSoundtrack(track) {
     soundtrack = new Audio(`assets/sounds/${track}`);
     soundtrack.play();
     soundtrack.loop = true;
+    soundtrack.volume = .2;
 }
 
-function movePlayer() {
+function managePlayer() {
     if (!(keysPressed['w'] || keysPressed['s'] || keysPressed['a'] || keysPressed['d'])) return;
     const json = { type: 'onMove', pressedKeys: keysPressed };
     socket.send(JSON.stringify(json));
 }
 
-function updatePlayerPosition(element, position) {
+function updateElementPosition(element, position, offset = 0) {
     if (!element || !position) return;
-    element.style.left = `${position.left}px`;
-    element.style.top = `${position.top}px`;
+    element.style.left = `${position.left - (offset == 0 ? 0 : element.width / 2 + 1)}px`;
+    element.style.top = `${position.top - (offset == 0 ? 0 : element.height / 2 + 1)}px`;
 }
 
 function renderContext() {
+    //players stuff
     const renderedPlayers = Array.from(desktopElement.querySelectorAll('.guest'));
     const connectedPlayerIds = memory.connections.map(player => player.id);
-
     renderedPlayers.forEach(otherPlayerElement => {
         const playerId = parseInt(otherPlayerElement.id.replace('guest-', ''), 10);
         if (!connectedPlayerIds.includes(playerId)) otherPlayerElement.remove();
@@ -91,19 +97,55 @@ function renderContext() {
             otherPlayerElement = desktopElement.querySelector(`#guest-${playerId}`);
         }
 
-        if (otherPlayerElement) updatePlayerPosition(otherPlayerElement, player.position);
+        if (otherPlayerElement) updateElementPosition(otherPlayerElement, player.position);
+    });
+    /// end
+
+    // hazards stuff
+    const renderedHazards = Array.from(desktopElement.querySelectorAll('.hazard'));
+    const spawnedHazardIds = memory.hazards.spawned.map(hazard => hazard.id);
+
+    renderedHazards.forEach(hazardElement => {
+        const hazardId = parseInt(hazardElement.id.replace('hazard-', ''), 10);
+        if (!spawnedHazardIds.includes(hazardId)) hazardElement.remove();
     });
 
-    updatePlayerPosition(playerElement, memory.player.position);
+    memory.hazards.spawned.forEach(hazard => {
+        const hazardId = hazard.id;
+        let hazardElement = desktopElement.querySelector(`#hazard-${hazardId}`);
+
+        if (!hazardElement) {
+            const html = `<img id="hazard-${hazardId}" class="hazard ${hazard.type}" src="assets/images/hazard_${hazard.type}.png" alt="hazard-${hazardId}">`;
+            desktopElement.insertAdjacentHTML("beforeend", html);
+            hazardElement = desktopElement.querySelector(`#hazard-${hazardId}`);
+        }
+
+        if (hazardElement) updateElementPosition(hazardElement, hazard.position, 1);
+    });
+    //end
+
+    updateElementPosition(playerElement, memory.player.position);
+
+    if (currentHealth > memory.player.health) {
+        shake(desktopElement.id, 30, 10);
+        new Audio('assets/sounds/hurt.wav').play();
+    } else if (currentHealth < memory.player.health) new Audio('assets/sounds/heal.wav').play();
+
+    if (memory.player.grace > 0) playerElement.classList.add('grace');
+    else playerElement.classList.remove('grace');
+
+    currentHealth = memory.player.health;
 }
 
 function startEngine() {
-    setInterval(() => {
+    clearInterval(engineInterval);
+    engineInterval = setInterval(() => {
         if (currentScreen !== 3) return;
-        movePlayer();
+        managePlayer();
         renderContext();
     }, 16);
 }
+
 
 const loadScreen = [
     function index_0() {

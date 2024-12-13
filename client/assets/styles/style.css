@@ -58,7 +58,7 @@ h1.disabled {
     color: gray;
 }
 
-.d-flex { 
+.d-flex {
     display: flex;
 }
 
@@ -172,6 +172,17 @@ h1.disabled {
     transition-property: color, opacity, transform;
 }
 
+.player.grace {
+    animation: blink 100ms infinite;
+}
+
+.hazard {
+    position: absolute;
+    transition-duration: 200ms;
+    transition-timing-function: ease;
+    transition-property: color, opacity, transform;
+}
+
 .guest {
     position: absolute;
     width: 1.8rem;
@@ -206,17 +217,29 @@ h1.disabled {
 }
 
 .desktop {
-    opacity: 0; 
+    opacity: 0;
     overflow: none;
     visibility: hidden;
     transition: opacity 1s ease-in-out, visibility 1s ease-in-out;
 }
 
 .desktop.visible {
-    opacity: 1; 
+    opacity: 1;
     visibility: visible;
 }
 
 .c-gray {
     color: gray;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: .5;
+    }
 }
