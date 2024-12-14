@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "axios": "^1.7.9",
     "rainstep_server": "file:",
     "ws": "^8.18.0"
   }

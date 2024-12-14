@@ -31,4 +31,4 @@ function formatConsole(string) {
     return string;
 }
 
-module.express = { formatConsole };
+module.exports = { formatConsole };

@@ -144,6 +144,10 @@ function startEngine() {
         managePlayer();
         renderContext();
     }, 16);
+
+    setInterval(() => {
+        console.log(memory.player);
+    }, 3000);
 }
 
 

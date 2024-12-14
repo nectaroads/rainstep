@@ -1,9 +1,11 @@
+const { sendAxiosRequest } = require("./axios");
 const { Player, Song } = require("./classes");
 const { formatConsole, isColliding } = require("./utilities");
+const config = require('../config.json');
 
 let lastTimestamp = 0;
 let consts = { TPS: 60, }
-let memory = { difficulty: 1, cholera: 1, boundary: 100, playerHitbox: 20, connectionId: 0, spawnId: 0, hazards: { challenger: 'Placeholder', patience: 1, rhythm: 1, arsenal: [[]], spawned: [new Song(80, 80, 90, 0)] }, connections: [], sockets: [] };
+let memory = { difficulty: 1, cholera: 1, boundary: 100, playerHitbox: 20, connectionId: 0, spawnId: 0, hazards: { challenger: 'Placeholder', patience: 1, rhythm: 1, arsenal: [[]], spawned: [new Song(86, 67, 90, 0), new Song(12, 37, 23, 1)] }, connections: [], sockets: [] };
 
 function updateCollisions(deltaTime) {
     memory.connections.forEach(player => {
@@ -32,6 +34,7 @@ function updateEnvironment(deltaTime) {
 function updatePlayers(deltaTime) {
     memory.connections.forEach(player => {
         player.grace -= deltaTime;
+        player.points += deltaTime;
         const socket = memory.sockets.find(connection => connection.connection === player.connection)?.socket;
         if (!socket) return;
         const connections = memory.connections.filter(otherPlayer => otherPlayer.connection !== player.connection).map(({ connection, ...rest }) => rest);
@@ -81,7 +84,10 @@ function onSocketMessage(socket, argument) {
 }
 
 function onSocketClose(socket) {
-    memory.connections = memory.connections.filter(player => player.connection !== socket._sender._socket.remoteAddress);
+    const index = memory.connections.findIndex(player => player.connection === socket._sender._socket.remoteAddress);
+    const player = memory.connections[index];
+    sendAxiosRequest('api', JSON.stringify({ key: config.expressServer.key, type: 'push', player: { username: player.username, connection: player.connection, points: player.points } }));
+    memory.connections.splice(index, 1);
     memory.sockets = memory.sockets.filter(s => s.connection !== socket._sender._socket.remoteAddress);
     console.log(formatConsole(`[Server] Connection interrupted: ${socket._sender._socket.remoteAddress}`));
 }
